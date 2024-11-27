@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id    String   @id @default(uuid()) @db.Uuid
+  user_name  String
+  email      String   @unique
+  password   String
+  status     String
+  title      String?
+  first_name String?
+  last_name  String?
+  create_date DateTime @default(now()) @db.Timestamp(6)
+  create_by   String?  @db.Uuid
+  update_date DateTime @updatedAt @db.Timestamp(6)
+  update_by   String?  @db.Uuid
+  
+  roles UserRole[]
+  work_permits WorkPermit[] @relation("WorkPermitCreateBy")
+  approved_permits WorkPermit[] @relation("WorkPermitApprover") // Reverse relation field for approver
+
+  @@map("user")
+}
+
+model Role {
+  role_id    Int      @id @default(autoincrement())
+  role_name  String
+  create_date DateTime @default(now()) @db.Timestamp(6)
+  create_by   String?  @db.Uuid
+  update_date DateTime @updatedAt @db.Timestamp(6)
+  update_by   String?  @db.Uuid
+  
+  users UserRole[]
+  role_permissions RolePermission[]
+
+  @@map("role")
+}
+
+model UserRole {
+  user_role_id Int    @id @default(autoincrement())
+  user_id      String @db.Uuid
+  role_id      Int
+  create_date  DateTime @default(now()) @db.Timestamp(6)
+  create_by    String?  @db.Uuid
+  update_date  DateTime @updatedAt @db.Timestamp(6)
+  update_by    String?  @db.Uuid
+
+  user User @relation(fields: [user_id], references: [user_id])
+  role Role @relation(fields: [role_id], references: [role_id])
+  
+  @@unique([user_id, role_id])
+
+  @@map("user_role")
+}
+
+model Permission {
+  permission_id Int    @id @default(autoincrement())
+  permission_name String
+  type          String
+  status        String
+  create_date   DateTime @default(now()) @db.Timestamp(6)
+  create_by     String?  @db.Uuid
+  update_date   DateTime @updatedAt @db.Timestamp(6)
+  update_by     String?  @db.Uuid
+  
+  role_permissions RolePermission[]
+
+  @@map("permission")
+}
+
+model RolePermission {
+  role_permission_id Int    @id @default(autoincrement())
+  role_id            Int
+  permission_id      Int
+  create_date        DateTime @default(now()) @db.Timestamp(6)
+  create_by          String?  @db.Uuid
+  update_date        DateTime @updatedAt @db.Timestamp(6)
+  update_by          String?  @db.Uuid
+
+  role Role         @relation(fields: [role_id], references: [role_id])
+  permission Permission @relation(fields: [permission_id], references: [permission_id])
+
+  @@map("role_permission")
+}
+
+model WorkPermit {
+  work_permit_id  String   @id @default(uuid()) @db.Uuid
+  work_permit_no  String   @unique
+  requester_name  String
+  work_type       String
+  worker_name     String
+  department      String
+  work_description String?
+  is_high_area    Boolean
+  use_welding_helmet Boolean
+  use_leather_gloves Boolean
+  use_safety_belt Boolean
+  use_full_body_harness Boolean
+  other_safety_equipment String?
+  working_start_date DateTime? @db.Timestamp(6)
+  working_end_date DateTime? @db.Timestamp(6)
+  emergency_person_name String
+  emergency_mobile_no String
+  id_card_file_path String?
+  other_document_file_path String?
+  approver_id      String? @db.Uuid
+  approve_date     DateTime? @db.Timestamp(6)
+  status           String
+  is_active        Boolean
+  reject_reason_1  String?
+  reject_reason_2  String?
+  create_date      DateTime @default(now()) @db.Timestamp(6)
+  create_by        String?  @db.Uuid
+  update_date      DateTime @updatedAt @db.Timestamp(6)
+  update_by        String?  @db.Uuid
+
+  created_by User? @relation("WorkPermitCreateBy", fields: [create_by], references: [user_id])
+  approver   User? @relation("WorkPermitApprover", fields: [approver_id], references: [user_id]) // Relation to the approver
+
+  safety_reports SafetyReport[]
+
+  @@map("work_permit")
+}
+
+model SafetyReport {
+  safety_report_id  String @id @default(uuid()) @db.Uuid
+  work_permit_id    String @db.Uuid
+  worker_amount     Int
+  not_safety_behavior String?
+  true_working_duration Int?
+  not_safety_alarm_count Int?
+  restoration_verification String?
+  safety_score     Int
+  create_date      DateTime @default(now()) @db.Timestamp(6)
+  create_by        String?  @db.Uuid
+  update_date      DateTime @updatedAt @db.Timestamp(6)
+  update_by        String?  @db.Uuid
+
+  work_permit WorkPermit @relation(fields: [work_permit_id], references: [work_permit_id])
+
+  @@map("safety_report")
+}
