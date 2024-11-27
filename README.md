@@ -44,15 +44,15 @@ The **Smart Safety Web Application** is a tool for managing DX safety permits wi
 1. **August**
    - Learn basic stacks (HTML, CSS, JavaScript).
    - UX/UI design using Figma.
-   - Front-end coding with React.js.
+   - Front-end coding with React.js , Next JS and Tailwind CSS.
 
 2. **September**
    - Database design and testing using PostgreSQL.
-   - Backend development with JavaScript.
+   - Backend development with Typescipt.
    - API design and testing.
 
 3. **October**
-   - Integrate database and backend APIs.
+   - Integrate database by prisma and backend APIs.
    - Conduct dry runs and testing.
 
 4. **November**
